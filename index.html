@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#48b04b" />
+    <title>むしとり島 - Bug Island (Phase 8)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet" />
+    <script type="module" crossorigin src="./assets/index-DzBHPlhA.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-D1fPhlS9.css">
+  </head>
+  <body>
+    <div id="app">
+      <!-- 3D WebGL Canvas Container -->
+      <div id="canvas-container"></div>
+
+      <!-- HUD UI Overlay -->
+      <div id="hud-overlay">
+        <!-- Top Status Bar -->
+        <header id="status-bar">
+          <div class="status-badge health-badge" title="たいりょく">
+            <span class="badge-icon">❤️</span>
+            <span class="badge-val">100</span>
+          </div>
+          <button class="status-badge time-badge" title="タップで時間を進める">
+            <span class="badge-icon">☀️</span>
+            <span class="badge-val">14:00</span>
+          </button>
+          <button class="status-badge money-badge" title="タップでショップを開く">
+            <span class="badge-icon">💰</span>
+            <span class="badge-val">0 G</span>
+          </button>
+          <!-- Shop / Basket Button -->
+          <button id="btn-open-shop" class="status-badge shop-badge" aria-label="虫かご・売店を開く">
+            <span class="badge-icon">🧺</span>
+            <span class="badge-val">かご</span>
+          </button>
+          <!-- Sumo Button (Phase 8) -->
+          <button id="btn-open-sumo" class="status-badge sumo-badge" aria-label="昆虫相撲を開く" title="昆虫相撲コロシアム">
+            <span class="badge-icon">🏆</span>
+            <span class="badge-val">相撲</span>
+          </button>
+          <!-- Museum Button (Phase 7) -->
+          <button id="btn-open-museum" class="status-badge museum-badge" aria-label="昆虫博物館を開く" title="昆虫テラリウム博物館">
+            <span class="badge-icon">🏛️</span>
+            <span class="badge-val">館</span>
+          </button>
+          <!-- Quest Button (Phase 7) -->
+          <button id="btn-open-quest" class="status-badge quest-badge" aria-label="博士のおねがいを開く" title="博士の調査依頼">
+            <span class="badge-icon">📜</span>
+            <span class="badge-val">依頼</span>
+          </button>
+          <!-- Photo Mode Button (Phase 7) -->
+          <button id="btn-open-photo" class="status-badge photo-badge" aria-label="フォトモード" title="観察フォトモード">
+            <span class="badge-icon">📸</span>
+          </button>
+          <!-- Sneak Toggle Button (Phase 7) -->
+          <button id="btn-toggle-sneak" class="status-badge sneak-badge" aria-label="しのび足" title="しのび足 (警戒されにくい)">
+            <span class="badge-icon">🤫</span>
+          </button>
+          <!-- Encyclopedia Book Button -->
+          <button id="btn-open-book" class="status-badge book-badge" aria-label="昆虫図鑑を開く">
+            <span class="badge-icon">📖</span>
+            <span class="badge-val">ずかん</span>
+          </button>
+          <!-- Audio Toggle Button -->
+          <button id="btn-toggle-audio" class="status-badge audio-badge" aria-label="音声を切り替える" title="BGM/SE 切り替え">
+            <span class="badge-icon">🔊</span>
+          </button>
+        </header>
+
+        <!-- Proximity Shop Prompt (Near Town Stall) -->
+        <div id="shop-stall-prompt" class="shop-stall-prompt" style="display: none;">
+          <span class="prompt-icon">🏪</span>
+          <span class="prompt-text">買い取り屋台＆道具屋 (タップまたは <strong>P</strong>)</span>
+        </div>
+
+        <!-- Museum Entrance Prompt (Phase 7) -->
+        <div id="museum-prompt" class="museum-prompt" style="display: none;">
+          <span class="prompt-icon">🏛️</span>
+          <span class="prompt-text">昆虫テラリウム博物館 (タップまたは <strong>O</strong>)</span>
+        </div>
+
+        <!-- Doctor Quest Prompt (Phase 7) -->
+        <div id="quest-prompt" class="quest-prompt" style="display: none;">
+          <span class="prompt-icon">🔬</span>
+          <span class="prompt-text">ファーブル博士のおねがい (タップまたは <strong>Q</strong>)</span>
+        </div>
+
+        <!-- Tree Shake Prompt -->
+        <div id="tree-shake-prompt" class="tree-shake-prompt" style="display: none;">
+          <span class="prompt-icon">🌳</span>
+          <span class="prompt-text">木をゆする (タップまたは <strong>E</strong>)</span>
+        </div>
+
+        <!-- Operation Guide (PC) -->
+        <div id="operation-guide">
+          <div class="guide-title">🌴 むしとり島 (Phase 7)</div>
+          <div class="guide-item"><span class="key">W A S D</span> : 移動 / <span class="key">C</span> : 忍び足 / <span class="key">Shift</span> : ダッシュ</div>
+          <div class="guide-item"><span class="key">Space</span> : ジャンプ / <span class="key">E</span> : 虫とり・木ゆすり</div>
+          <div class="guide-item"><span class="key">O</span> : 博物館 / <span class="key">Q</span> : 博士依頼 / <span class="key">Z</span> : フォト</div>
+          <div class="guide-item"><span class="key">I</span> / <span class="key">P</span> : かご・道具屋 / <span class="key">B</span> : 図鑑</div>
+          <div class="guide-item"><span class="key">T</span> : 時間進行 / <span class="key">Y</span> : 天候 / <span class="key">M</span> : 音声</div>
+        </div>
+
+        <!-- Touch Controls Container (Mobile UI) -->
+        <div id="touch-controls">
+          <!-- Left: Virtual Joystick Zone -->
+          <div id="joystick-zone">
+            <div id="joystick-base">
+              <div id="joystick-stick"></div>
+            </div>
+          </div>
+
+          <!-- Right: Action Buttons Group -->
+          <div id="action-buttons-zone">
+            <!-- Jump Button -->
+            <button id="btn-jump" class="touch-btn btn-secondary" aria-label="ジャンプ">
+              <span class="btn-emoji">🦘</span>
+              <span class="btn-label">ジャンプ</span>
+            </button>
+
+            <!-- Dash Button -->
+            <button id="btn-dash" class="touch-btn btn-secondary" aria-label="ダッシュ">
+              <span class="btn-emoji">💨</span>
+              <span class="btn-label">ダッシュ</span>
+            </button>
+
+            <!-- Net / Tool Action Button (Primary) -->
+            <button id="btn-action" class="touch-btn btn-primary" aria-label="網を振る">
+              <span class="btn-emoji">🥅</span>
+              <span class="btn-label">あみ</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

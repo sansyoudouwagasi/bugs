@@ -9,11 +9,20 @@ export interface TreeInstance {
   hasHoney: boolean;
 }
 
+export interface RockObstacle {
+  mesh: THREE.Mesh;
+  position: THREE.Vector3;
+  radius: number;
+  height: number;
+  topY: number;
+}
+
 export class Nature {
   public group: THREE.Group;
   private island: Island;
   public shopStallPos: THREE.Vector3 = new THREE.Vector3(5, 0, 6);
   public trees: TreeInstance[] = [];
+  public rocks: RockObstacle[] = [];
 
   // Falling leaves particle system
   private leavesGroup: THREE.Group;
@@ -191,7 +200,9 @@ export class Nature {
   // 3. Rocks
   private spawnRocks(): void {
     const rockMat = new THREE.MeshLambertMaterial({ color: 0x7f8c8d, flatShading: true });
-    const rockGeo = new THREE.DodecahedronGeometry(0.8, 0);
+    const baseGeoRadius = 0.8;
+    const rockGeo = new THREE.DodecahedronGeometry(baseGeoRadius, 0);
+    this.rocks = [];
 
     for (let i = 0; i < 35; i++) {
       const angle = Math.random() * Math.PI * 2;
@@ -203,13 +214,28 @@ export class Nature {
       if (y < 0.2) continue;
 
       const rock = new THREE.Mesh(rockGeo, rockMat);
-      rock.position.set(x, y + 0.3, z);
       const s = 0.5 + Math.random() * 1.0;
-      rock.scale.set(s * (0.8 + Math.random() * 0.4), s * 0.6, s * (0.8 + Math.random() * 0.4));
+      const scaleX = s * (0.8 + Math.random() * 0.4);
+      const scaleY = s * 0.6;
+      const scaleZ = s * (0.8 + Math.random() * 0.4);
+
+      rock.position.set(x, y + 0.3, z);
+      rock.scale.set(scaleX, scaleY, scaleZ);
       rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
       rock.castShadow = true;
       rock.receiveShadow = true;
       this.group.add(rock);
+
+      // Collision obstacle data
+      const horizontalRadius = Math.max(scaleX, scaleZ) * baseGeoRadius * 0.9;
+      const rockHeight = 0.3 + scaleY * baseGeoRadius * 0.95; // Height above ground
+      this.rocks.push({
+        mesh: rock,
+        position: new THREE.Vector3(x, y, z),
+        radius: horizontalRadius,
+        height: rockHeight,
+        topY: y + rockHeight
+      });
     }
   }
 

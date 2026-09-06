@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Island } from './Island';
-import { Nature } from './Nature';
+import { Nature, RockObstacle } from './Nature';
 
 export type HabitatType = 'grassland' | 'forest' | 'mountain' | 'pond' | 'coast' | 'cave';
 
@@ -16,6 +16,10 @@ export class World {
 
     this.scene.add(this.island.group);
     this.scene.add(this.nature.group);
+  }
+
+  public getRocks(): RockObstacle[] {
+    return this.nature.rocks;
   }
 
   /**

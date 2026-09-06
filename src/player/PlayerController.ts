@@ -121,8 +121,48 @@ export class PlayerController {
     // Keep player inside island boundaries
     this.world.clampToIsland(this.player.position);
 
+    // Collision check & obstacle resolution with rocks
+    const playerRadius = 0.42;
+    let highestRockTop = -999;
+    let standingOnRock = false;
+
+    const rocks = this.world.nature?.rocks;
+    if (rocks && rocks.length > 0) {
+      for (let i = 0; i < rocks.length; i++) {
+        const rock = rocks[i];
+        const dx = this.player.position.x - rock.position.x;
+        const dz = this.player.position.z - rock.position.z;
+        const dist = Math.hypot(dx, dz);
+        const minDist = playerRadius + rock.radius;
+
+        if (dist < minDist) {
+          // Check if player is airborne/jumping high enough to clear or stand on the rock
+          const isHighEnough = this.player.position.y >= rock.topY - 0.25;
+
+          if (isHighEnough) {
+            // Airborne above rock -> allow vaulting over, and check if landing surface
+            if (dist < rock.radius * 0.95) {
+              if (rock.topY > highestRockTop) {
+                highestRockTop = rock.topY;
+                standingOnRock = true;
+              }
+            }
+          } else {
+            // Ground/low level -> block passage and push out
+            if (dist > 0.0001) {
+              const overlap = minDist - dist;
+              this.player.position.x += (dx / dist) * overlap;
+              this.player.position.z += (dz / dist) * overlap;
+            }
+          }
+        }
+      }
+    }
+
     // 2. Vertical movement (Gravity & Ground check)
     const terrainY = this.world.getTerrainHeight(this.player.position.x, this.player.position.z);
+    // Support height: terrain surface or rock top if standing on one
+    const effectiveGroundY = standingOnRock ? Math.max(terrainY, highestRockTop) : terrainY;
 
     if (moveInput.isJumping && this.isGrounded && this.player.animState !== 'action') {
       this.verticalVelocity = this.jumpForce;
@@ -137,14 +177,20 @@ export class PlayerController {
       this.verticalVelocity += this.gravity * delta;
       this.player.position.y += this.verticalVelocity * delta;
 
-      if (this.player.position.y <= terrainY) {
-        this.player.position.y = terrainY;
+      if (this.player.position.y <= effectiveGroundY) {
+        this.player.position.y = effectiveGroundY;
         this.verticalVelocity = 0;
         this.isGrounded = true;
       }
     } else {
-      // Snap smoothly to terrain surface
-      this.player.position.y = THREE.MathUtils.lerp(this.player.position.y, terrainY, 0.35);
+      // If walked off a rock/ledge into air, transition to falling
+      if (this.player.position.y > effectiveGroundY + 0.25) {
+        this.isGrounded = false;
+        this.verticalVelocity = 0;
+      } else {
+        // Snap smoothly to ground / rock surface
+        this.player.position.y = THREE.MathUtils.lerp(this.player.position.y, effectiveGroundY, 0.35);
+      }
     }
 
     // 3. Animation State Management & Action Trigger

@@ -23,6 +23,7 @@ export class ShopManager {
   public hasSneakers: boolean = false;
   public hasLargeBasket: boolean = false;
   public honeyCount: number = 0;
+  public bananaHoneyCount: number = 0;
   public medicineCount: number = 0;
   public redJellyCount: number = 0;
   public greenJellyCount: number = 0;
@@ -69,6 +70,14 @@ export class ShopManager {
       icon: '🍯',
       price: 60,
       description: '木に塗ると甘い香りでレアなクワガタやセミを惹きつける！（1回使い切り）',
+    },
+    {
+      id: 'banana_honey',
+      name: 'とくせいバナナ蜜',
+      category: 'consumable',
+      icon: '🍌',
+      price: 120,
+      description: '熟成バナナを発酵させた高級蜜。ヘラクレスやオオクワガタ、ギフチョウなどの最上級レア虫を引き寄せる！',
     },
     {
       id: 'medicine',
@@ -147,6 +156,8 @@ export class ShopManager {
       this.applyBasketUpgrade();
     } else if (itemId === 'honey') {
       this.honeyCount += 1;
+    } else if (itemId === 'banana_honey') {
+      this.bananaHoneyCount += 1;
     } else if (itemId === 'medicine') {
       this.medicineCount += 1;
     } else if (itemId === 'jelly_red') {
@@ -224,6 +235,12 @@ export class ShopManager {
     }
   }
 
+  public earnMoney(amount: number): void {
+    this.money += amount;
+    this.updateHUD(true);
+    this.saveToStorage();
+  }
+
   public calculatePrice(record: CaughtInsectRecord): number {
     const base = InsectDatabase.getById(record.id)?.basePrice || 50;
     let multiplier = 1.0;
@@ -295,6 +312,7 @@ export class ShopManager {
       localStorage.setItem('bug_island_sneakers', this.hasSneakers ? 'true' : 'false');
       localStorage.setItem('bug_island_basket_large', this.hasLargeBasket ? 'true' : 'false');
       localStorage.setItem('bug_island_honey', this.honeyCount.toString());
+      localStorage.setItem('bug_island_banana_honey', this.bananaHoneyCount.toString());
       localStorage.setItem('bug_island_medicine', this.medicineCount.toString());
       localStorage.setItem('bug_island_jelly_red', this.redJellyCount.toString());
       localStorage.setItem('bug_island_jelly_green', this.greenJellyCount.toString());
@@ -314,6 +332,7 @@ export class ShopManager {
       this.hasSneakers = localStorage.getItem('bug_island_sneakers') === 'true';
       this.hasLargeBasket = localStorage.getItem('bug_island_basket_large') === 'true';
       this.honeyCount = parseInt(localStorage.getItem('bug_island_honey') || '0', 10) || 0;
+      this.bananaHoneyCount = parseInt(localStorage.getItem('bug_island_banana_honey') || '0', 10) || 0;
       this.medicineCount = parseInt(localStorage.getItem('bug_island_medicine') || '0', 10) || 0;
       this.redJellyCount = parseInt(localStorage.getItem('bug_island_jelly_red') || '0', 10) || 0;
       this.greenJellyCount = parseInt(localStorage.getItem('bug_island_jelly_green') || '0', 10) || 0;

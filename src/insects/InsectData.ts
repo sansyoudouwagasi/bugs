@@ -53,7 +53,8 @@ export class InsectDatabase {
     'stag_beetle_giant',
     'hercules_beetle',
     'rainbow_stag',
-    'platinum_beetle'
+    'platinum_beetle',
+    'giant_water_bug'
   ];
 
   public static isSumoFighter(id: string): boolean {
@@ -100,6 +101,11 @@ export class InsectDatabase {
         basePower = 50;
         baseStamina = 60;
         baseWeight = 50;
+        break;
+      case 'giant_water_bug':
+        basePower = 58;
+        baseStamina = 52;
+        baseWeight = 46;
         break;
       case 'hercules_beetle':
         basePower = 70;

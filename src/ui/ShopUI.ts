@@ -84,6 +84,7 @@ export class ShopUI {
           <div class="bag-summary">
             <span class="bag-label">手持ちアイテム:</span>
             <span class="bag-badge" id="bag-honey-count">🍯 ミツ: 0個</span>
+            <span class="bag-badge" id="bag-banana-count">🍌 バナナ蜜: 0個</span>
             <span class="bag-badge" id="bag-med-count">💊 薬: 0個</span>
           </div>
           <button class="shop-use-med-btn" id="btn-use-medicine">💊 薬を飲む (+50 HP)</button>
@@ -273,9 +274,11 @@ export class ShopUI {
     if (!this.overlay) return;
     const listEl = this.overlay.querySelector('#shop-items-list');
     const honeyCountEl = this.overlay.querySelector('#bag-honey-count');
+    const bananaCountEl = this.overlay.querySelector('#bag-banana-count');
     const medCountEl = this.overlay.querySelector('#bag-med-count');
 
     if (honeyCountEl) honeyCountEl.textContent = `🍯 ミツ: ${this.shop.honeyCount}個`;
+    if (bananaCountEl) bananaCountEl.textContent = `🍌 バナナ蜜: ${this.shop.bananaHoneyCount}個`;
     if (medCountEl) medCountEl.textContent = `💊 薬: ${this.shop.medicineCount}個`;
 
     if (!listEl) return;

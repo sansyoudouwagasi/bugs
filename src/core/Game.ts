@@ -28,6 +28,10 @@ import { PhotoModeUI } from '../ui/PhotoModeUI';
 import { SumoArena } from '../arena/SumoArena';
 import { SumoUI } from '../ui/SumoUI';
 import { MysticCave } from '../world/MysticCave';
+import { CampSite } from '../camp/CampSite';
+import { HoneyTrapManager } from '../trap/HoneyTrapManager';
+import { TournamentManager } from '../tournament/TournamentManager';
+import { TournamentUI } from '../ui/TournamentUI';
 
 export class Game {
   public container: HTMLElement;
@@ -71,6 +75,12 @@ export class Game {
   public sumoUI: SumoUI;
   public mysticCave: MysticCave;
   private screenFader: HTMLElement;
+
+  // Phase 9: Camp, Light Trap, Honey Trap & Tournament
+  public campSite: CampSite;
+  public honeyTrapManager: HoneyTrapManager;
+  public tournamentManager: TournamentManager;
+  public tournamentUI: TournamentUI;
 
   public insectManager: InsectManager;
   private catchUI: CatchEffectUI;
@@ -247,7 +257,17 @@ export class Game {
       this.handlePlayerAction();
     };
 
-    // 19. UI Button Listeners & Keybinds
+    // 19. Phase 9: CampSite, Honey Trap & Tournament
+    this.campSite = new CampSite(this.world, this.insectManager, this.healthManager, this.timeManager);
+    this.honeyTrapManager = new HoneyTrapManager(this.world.nature, this.shopManager, this.insectManager, this.audio);
+    this.tournamentManager = new TournamentManager(this.shopManager, this.audio);
+    this.tournamentUI = new TournamentUI(this.tournamentManager);
+
+    this.insectManager.addCatchListener((record) => {
+      this.tournamentManager.onInsectCaught(record);
+    });
+
+    // 20. UI Button Listeners & Keybinds
     this.initUIEventListeners();
 
     // Auto save on page unload
@@ -428,6 +448,23 @@ export class Game {
       this.sumoUI.show();
     });
 
+    // Phase 9: Tournament button
+    const btnOpenTourney = document.getElementById('btn-open-tourney');
+    btnOpenTourney?.addEventListener('click', () => {
+      this.tournamentUI.toggleLobby();
+    });
+
+    // Phase 9: Prompts Click Handlers
+    document.getElementById('campfire-prompt')?.addEventListener('click', () => {
+      this.campSite.restAtCampfire();
+    });
+    document.getElementById('light-trap-prompt')?.addEventListener('click', () => {
+      this.campSite.toggleTrap();
+    });
+    document.getElementById('honey-apply-prompt')?.addEventListener('click', () => {
+      this.honeyTrapManager.applyHoneyToCurrentTree();
+    });
+
     // Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
       if (e.code === 'KeyB') {
@@ -444,12 +481,23 @@ export class Game {
         this.photoModeUI.toggle();
       } else if (e.code === 'KeyK') {
         this.sumoUI.show();
+      } else if (e.code === 'KeyJ') {
+        this.tournamentUI.toggleLobby();
+      } else if (e.code === 'KeyH') {
+        this.honeyTrapManager.applyHoneyToCurrentTree();
       } else if (e.code === 'Space') {
-        // Check Sumo Arena or Boat interaction before jumping
-        if (this.sumoArena.checkInteraction()) {
+        // Check Campfire, Sumo Arena or Boat interaction before jumping
+        if (this.campSite.isNearCampfire(this.player.position)) {
+          this.campSite.restAtCampfire();
+          e.preventDefault();
+        } else if (this.sumoArena.checkInteraction()) {
           e.preventDefault();
         } else if (this.mysticCave.checkInteraction()) {
           e.preventDefault();
+        }
+      } else if (e.code === 'KeyE') {
+        if (this.campSite.isNearLightTrap(this.player.position)) {
+          this.campSite.toggleTrap();
         }
       } else if (e.code === 'KeyC') {
         const isSneak = this.playerController.toggleSneak();
@@ -545,6 +593,29 @@ export class Game {
     // 14. Phase 8: Update Sumo Arena & Mystic Cave
     this.sumoArena.update(this.player.position, delta);
     this.mysticCave.update(this.player.position, delta);
+
+    // 15. Phase 9: Update CampSite, Honey Trap & Tournament
+    this.campSite.update(delta);
+    this.honeyTrapManager.update(delta);
+    this.tournamentManager.update(delta);
+
+    // 16. Phase 9: Proximity Prompts Check
+    const campfirePrompt = document.getElementById('campfire-prompt');
+    if (campfirePrompt) {
+      campfirePrompt.style.display = this.campSite.isNearCampfire(this.player.position) ? 'flex' : 'none';
+    }
+
+    const lightTrapPrompt = document.getElementById('light-trap-prompt');
+    if (lightTrapPrompt) {
+      lightTrapPrompt.style.display = this.campSite.isNearLightTrap(this.player.position) ? 'flex' : 'none';
+    }
+
+    const nearHoneyTree = this.honeyTrapManager.checkNearbyTree(this.player.position);
+    const honeyPrompt = document.getElementById('honey-apply-prompt');
+    if (honeyPrompt) {
+      const hasAnyHoney = this.shopManager.honeyCount > 0 || (this.shopManager as any).bananaHoneyCount > 0;
+      honeyPrompt.style.display = nearHoneyTree && hasAnyHoney && !nearHoneyTree.hasHoney ? 'flex' : 'none';
+    }
 
     // 15. Auto Save every 30s
     this.saveTimer += delta;

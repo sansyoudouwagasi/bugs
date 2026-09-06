@@ -43,6 +43,12 @@ export class InsectModelFactory {
         return this.createEmperorCicada(data);
       case 'fungus_gnat':
         return this.createFungusGnat(data);
+      case 'atlas_moth':
+        return this.createAtlasMoth(data);
+      case 'giant_water_bug':
+        return this.createGiantWaterBug(data);
+      case 'luehdorfia':
+        return this.createLuehdorfia(data);
       default:
         return this.createButterfly(data);
     }
@@ -1003,6 +1009,280 @@ export class InsectModelFactory {
         // Ethereal bioluminescent pulse
         const pulse = 0.5 + Math.sin(gnatTimer * 3.5) * 0.45;
         glowMat.emissiveIntensity = pulse;
+      }
+    };
+  }
+
+  // 18. Atlas Moth Model (ヨナグニサン - 世界最大級の伝説の巨大蛾)
+  private static createAtlasMoth(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    // Heavy furry rust-red abdomen & thorax
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x8b2500, flatShading: true });
+    const bodyGeo = new THREE.CapsuleGeometry(0.18, 0.7, 5, 8);
+    bodyGeo.rotateX(Math.PI / 2);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    group.add(body);
+
+    const thoraxMat = new THREE.MeshLambertMaterial({ color: 0xd98032, flatShading: true });
+    const thorax = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.26, 0.35), thoraxMat);
+    thorax.position.set(0, 0.12, 0.2);
+    group.add(thorax);
+
+    // Feathery orange antennae
+    const antMat = new THREE.MeshBasicMaterial({ color: 0xf5cd79 });
+    for (let i of [-1, 1]) {
+      const ant = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.02, 0.35), antMat);
+      ant.position.set(i * 0.12, 0.26, 0.38);
+      ant.rotation.set(-0.3, i * 0.5, i * 0.2);
+      group.add(ant);
+    }
+
+    // Gigantic Broad Wings with snake-head tips and triangular white windows
+    const wingMat = new THREE.MeshLambertMaterial({
+      color: 0xb33927,
+      side: THREE.DoubleSide,
+      flatShading: true,
+      transparent: true,
+      opacity: 0.96
+    });
+
+    const windowMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.85,
+      side: THREE.DoubleSide
+    });
+
+    // Custom shape with dramatic curved hook at top corner (snake head)
+    const wingShape = new THREE.Shape();
+    wingShape.moveTo(0, 0);
+    wingShape.quadraticCurveTo(0.6, 0.9, 1.4, 0.85); // Forewing outer edge
+    wingShape.quadraticCurveTo(1.6, 0.7, 1.5, 0.5);  // Snake-like hook tip
+    wingShape.quadraticCurveTo(1.1, 0.1, 0.8, -0.4); // Outer margin
+    wingShape.quadraticCurveTo(0.5, -0.8, 0.2, -0.6); // Hindwing lower lobe
+    wingShape.quadraticCurveTo(0.05, -0.3, 0, 0);
+
+    const wingGeo = new THREE.ShapeGeometry(wingShape);
+
+    // Triangular translucent window geometry
+    const winShape = new THREE.Shape();
+    winShape.moveTo(0.45, 0.25);
+    winShape.lineTo(0.75, 0.32);
+    winShape.lineTo(0.62, 0.08);
+    winShape.closePath();
+    const winGeo = new THREE.ShapeGeometry(winShape);
+
+    const leftWingPivot = new THREE.Group();
+    leftWingPivot.position.set(-0.12, 0.12, 0.05);
+    const leftWing = new THREE.Mesh(wingGeo, wingMat);
+    leftWing.rotation.x = Math.PI / 2;
+    leftWing.rotation.y = Math.PI;
+    const leftWin = new THREE.Mesh(winGeo, windowMat);
+    leftWin.rotation.x = Math.PI / 2;
+    leftWin.rotation.y = Math.PI;
+    leftWin.position.y = 0.005;
+    leftWingPivot.add(leftWing, leftWin);
+
+    const rightWingPivot = new THREE.Group();
+    rightWingPivot.position.set(0.12, 0.12, 0.05);
+    const rightWing = new THREE.Mesh(wingGeo, wingMat);
+    rightWing.rotation.x = Math.PI / 2;
+    const rightWin = new THREE.Mesh(winGeo, windowMat);
+    rightWin.rotation.x = Math.PI / 2;
+    rightWin.position.y = 0.005;
+    rightWingPivot.add(rightWing, rightWin);
+
+    group.add(leftWingPivot, rightWingPivot);
+
+    // Group scale for majesty (world's largest moth)
+    group.scale.set(1.4, 1.4, 1.4);
+
+    let flapTimer = Math.random() * Math.PI * 2;
+
+    return {
+      group,
+      update(delta: number, state: string) {
+        // Slow, grand, majestic flapping
+        const flapSpeed = state === 'flee' ? 14 : 6;
+        flapTimer += delta * flapSpeed;
+        const flapAngle = Math.sin(flapTimer) * 0.55;
+
+        leftWingPivot.rotation.z = -flapAngle;
+        rightWingPivot.rotation.z = flapAngle;
+        body.position.y = Math.sin(flapTimer) * 0.03;
+      }
+    };
+  }
+
+  // 19. Giant Water Bug Model (タガメ - 水中の覇王)
+  private static createGiantWaterBug(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    // Flat broad dark olive-brown body
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x3d3d3d, flatShading: true });
+    const bodyGeo = new THREE.BoxGeometry(0.38, 0.1, 0.72);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.set(0, 0.1, 0);
+    group.add(body);
+
+    // Triangular head with big predatory eyes
+    const headMat = new THREE.MeshLambertMaterial({ color: 0x2b2b2b, flatShading: true });
+    const head = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.22, 4), headMat);
+    head.rotation.x = -Math.PI / 2;
+    head.rotation.y = Math.PI / 4;
+    head.position.set(0, 0.1, 0.44);
+    group.add(head);
+
+    const eyeMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+    for (let i of [-1, 1]) {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 5, 5), eyeMat);
+      eye.position.set(i * 0.12, 0.13, 0.46);
+      group.add(eye);
+    }
+
+    // Powerful Raptor-like front raptorial legs (folded grasping claws)
+    const clawMat = new THREE.MeshLambertMaterial({ color: 0x4f4f4f, flatShading: true });
+    const clawGroupL = new THREE.Group();
+    const clawGroupR = new THREE.Group();
+
+    for (let [cg, sign] of [[clawGroupL, -1], [clawGroupR, 1]] as [THREE.Group, number][]) {
+      cg.position.set(sign * 0.16, 0.1, 0.38);
+
+      // Thigh
+      const femur = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.22), clawMat);
+      femur.position.set(sign * 0.08, 0, 0.08);
+      femur.rotation.y = sign * 0.45;
+      cg.add(femur);
+
+      // Hook blade (sickle)
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.2), clawMat);
+      blade.position.set(sign * 0.15, 0, 0.18);
+      blade.rotation.y = -sign * 0.7;
+      cg.add(blade);
+
+      group.add(cg);
+    }
+
+    // Flattened swimming middle and hind legs
+    const legMat = new THREE.MeshLambertMaterial({ color: 0x2f3542 });
+    for (let sign of [-1, 1]) {
+      // Middle leg
+      const midLeg = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 0.06), legMat);
+      midLeg.position.set(sign * 0.25, 0.06, 0.05);
+      midLeg.rotation.z = -sign * 0.25;
+      group.add(midLeg);
+
+      // Back swimming paddle leg
+      const hindLeg = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.03, 0.08), legMat);
+      hindLeg.position.set(sign * 0.28, 0.06, -0.22);
+      hindLeg.rotation.set(0, sign * 0.35, -sign * 0.2);
+      group.add(hindLeg);
+    }
+
+    // Breathing siphon at rear tip
+    const siphon = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.16), legMat);
+    siphon.rotation.x = Math.PI / 2;
+    siphon.position.set(0, 0.09, -0.42);
+    group.add(siphon);
+
+    let crawlTimer = 0;
+
+    return {
+      group,
+      update(delta: number, _state: string, isMoving: boolean) {
+        if (isMoving) {
+          crawlTimer += delta * 12;
+          clawGroupL.rotation.y = Math.sin(crawlTimer) * 0.25;
+          clawGroupR.rotation.y = -Math.sin(crawlTimer) * 0.25;
+          body.position.y = 0.1 + Math.abs(Math.sin(crawlTimer)) * 0.02;
+        } else {
+          // Subtle predatory breathing sway
+          clawGroupL.rotation.y = 0.1 + Math.sin(Date.now() * 0.003) * 0.08;
+          clawGroupR.rotation.y = -0.1 - Math.sin(Date.now() * 0.003) * 0.08;
+        }
+      }
+    };
+  }
+
+  // 20. Luehdorfia Butterfly Model (ギフチョウ - 春の女神)
+  private static createLuehdorfia(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    // Slender dark body with gold accents
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x1e272e, flatShading: true });
+    const bodyGeo = new THREE.CapsuleGeometry(0.06, 0.38, 4, 6);
+    bodyGeo.rotateX(Math.PI / 2);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    group.add(body);
+
+    // Striking yellow & black zebra/tiger striped wings with scalloped tails and red/blue jewel spots
+    const wingMat = new THREE.MeshLambertMaterial({
+      color: 0xf1c40f,
+      side: THREE.DoubleSide,
+      flatShading: true,
+      transparent: true,
+      opacity: 0.98
+    });
+
+    const spotMatRed = new THREE.MeshBasicMaterial({ color: 0xe74c3c, side: THREE.DoubleSide });
+    const spotMatBlue = new THREE.MeshBasicMaterial({ color: 0x3498db, side: THREE.DoubleSide });
+
+    const wingShape = new THREE.Shape();
+    wingShape.moveTo(0, 0);
+    wingShape.quadraticCurveTo(0.45, 0.65, 0.75, 0.35); // Forewing apex
+    wingShape.quadraticCurveTo(0.65, 0.0, 0.5, -0.2);
+    wingShape.lineTo(0.42, -0.42); // Scalloped tail
+    wingShape.lineTo(0.35, -0.36);
+    wingShape.lineTo(0.28, -0.46); // Second tail
+    wingShape.quadraticCurveTo(0.12, -0.3, 0, 0);
+
+    const wingGeo = new THREE.ShapeGeometry(wingShape);
+
+    const leftWingPivot = new THREE.Group();
+    leftWingPivot.position.set(-0.05, 0.05, 0);
+    const leftWing = new THREE.Mesh(wingGeo, wingMat);
+    leftWing.rotation.x = Math.PI / 2;
+    leftWing.rotation.y = Math.PI;
+
+    // Red and blue spots near scalloped tail
+    const spotRedL = new THREE.Mesh(new THREE.CircleGeometry(0.04, 6), spotMatRed);
+    spotRedL.rotation.x = Math.PI / 2;
+    spotRedL.position.set(0.32, 0.005, -0.34);
+    const spotBlueL = new THREE.Mesh(new THREE.CircleGeometry(0.03, 6), spotMatBlue);
+    spotBlueL.rotation.x = Math.PI / 2;
+    spotBlueL.position.set(0.24, 0.005, -0.36);
+
+    leftWingPivot.add(leftWing, spotRedL, spotBlueL);
+
+    const rightWingPivot = new THREE.Group();
+    rightWingPivot.position.set(0.05, 0.05, 0);
+    const rightWing = new THREE.Mesh(wingGeo, wingMat);
+    rightWing.rotation.x = Math.PI / 2;
+
+    const spotRedR = new THREE.Mesh(new THREE.CircleGeometry(0.04, 6), spotMatRed);
+    spotRedR.rotation.x = Math.PI / 2;
+    spotRedR.position.set(0.32, 0.005, -0.34);
+    const spotBlueR = new THREE.Mesh(new THREE.CircleGeometry(0.03, 6), spotMatBlue);
+    spotBlueR.rotation.x = Math.PI / 2;
+    spotBlueR.position.set(0.24, 0.005, -0.36);
+
+    rightWingPivot.add(rightWing, spotRedR, spotBlueR);
+
+    group.add(leftWingPivot, rightWingPivot);
+
+    let flapTimer = Math.random() * Math.PI * 2;
+
+    return {
+      group,
+      update(delta: number, state: string) {
+        // Lively, buoyant fluttering
+        const flapSpeed = state === 'flee' ? 24 : 12;
+        flapTimer += delta * flapSpeed;
+        const flapAngle = Math.sin(flapTimer) * 0.75;
+
+        leftWingPivot.rotation.z = -flapAngle;
+        rightWingPivot.rotation.z = flapAngle;
       }
     };
   }

@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#48b04b" />
-    <title>むしとり島 - Bug Island (Phase 8)</title>
+    <title>むしとり島 - Bug Island (Phase 9)</title>
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,9 +38,14 @@
             <span class="badge-icon">🧺</span>
             <span class="badge-val">かご</span>
           </button>
+          <!-- Tournament Button (Phase 9) -->
+          <button id="btn-open-tourney" class="status-badge tourney-badge" aria-label="むしとり大会を開く" title="島内むしとり大会">
+            <span class="badge-icon">🏆</span>
+            <span class="badge-val">大会</span>
+          </button>
           <!-- Sumo Button (Phase 8) -->
           <button id="btn-open-sumo" class="status-badge sumo-badge" aria-label="昆虫相撲を開く" title="昆虫相撲コロシアム">
-            <span class="badge-icon">🏆</span>
+            <span class="badge-icon">🥋</span>
             <span class="badge-val">相撲</span>
           </button>
           <!-- Museum Button (Phase 7) -->
@@ -96,11 +101,30 @@
           <span class="prompt-text">木をゆする (タップまたは <strong>E</strong>)</span>
         </div>
 
+        <!-- Honey Apply Prompt (Phase 9) -->
+        <div id="honey-apply-prompt" class="honey-apply-prompt" style="display: none;">
+          <span class="prompt-icon">🍯</span>
+          <span class="prompt-text">木にミツを塗る (タップまたは <strong>H</strong>)</span>
+        </div>
+
+        <!-- Campfire Rest Prompt (Phase 9) -->
+        <div id="campfire-prompt" class="campfire-prompt" style="display: none;">
+          <span class="prompt-icon">🏕️</span>
+          <span class="prompt-text">焚き火で休む (+全回復) (タップまたは <strong>Space</strong>)</span>
+        </div>
+
+        <!-- Light Trap Switch Prompt (Phase 9) -->
+        <div id="light-trap-prompt" class="light-trap-prompt" style="display: none;">
+          <span class="prompt-icon">💡</span>
+          <span class="prompt-text">灯火採集スイッチ切替 (タップまたは <strong>E</strong>)</span>
+        </div>
+
         <!-- Operation Guide (PC) -->
         <div id="operation-guide">
-          <div class="guide-title">🌴 むしとり島 (Phase 7)</div>
+          <div class="guide-title">🌴 むしとり島 (Phase 9)</div>
           <div class="guide-item"><span class="key">W A S D</span> : 移動 / <span class="key">C</span> : 忍び足 / <span class="key">Shift</span> : ダッシュ</div>
-          <div class="guide-item"><span class="key">Space</span> : ジャンプ / <span class="key">E</span> : 虫とり・木ゆすり</div>
+          <div class="guide-item"><span class="key">Space</span> : ジャンプ / <span class="key">E</span> : 虫とり・木ゆすり・灯火</div>
+          <div class="guide-item"><span class="key">H</span> : ミツ塗り / <span class="key">J</span> : 大会 / <span class="key">K</span> : 相撲</div>
           <div class="guide-item"><span class="key">O</span> : 博物館 / <span class="key">Q</span> : 博士依頼 / <span class="key">Z</span> : フォト</div>
           <div class="guide-item"><span class="key">I</span> / <span class="key">P</span> : かご・道具屋 / <span class="key">B</span> : 図鑑</div>
           <div class="guide-item"><span class="key">T</span> : 時間進行 / <span class="key">Y</span> : 天候 / <span class="key">M</span> : 音声</div>

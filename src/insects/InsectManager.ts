@@ -131,6 +131,11 @@ export class InsectManager {
   }
 
   public onCatch?: (record: CaughtInsectRecord) => void;
+  public onCatchCallbacks: ((record: CaughtInsectRecord) => void)[] = [];
+
+  public addCatchListener(cb: (record: CaughtInsectRecord) => void): void {
+    this.onCatchCallbacks.push(cb);
+  }
 
   private executeCatchSuccess(insect: InsectController, playerPos: THREE.Vector3): void {
     insect.isCaught = true;
@@ -156,9 +161,12 @@ export class InsectManager {
     // Add into player's Inventory (Basket)
     this.inventory.addItem(record);
 
-    // Notify external listeners (e.g. QuestManager)
+    // Notify external listeners (e.g. QuestManager, TournamentManager)
     if (this.onCatch) {
       this.onCatch(record);
+    }
+    for (const cb of this.onCatchCallbacks) {
+      cb(record);
     }
 
     // Switch player to "inspect" animation (smiling with bug cage)
@@ -223,5 +231,11 @@ export class InsectManager {
     );
 
     return this.spawner.spawnAt(data, spawnPos, 'flee');
+  }
+
+  public spawnSingleInsect(id: string, pos: THREE.Vector3): InsectController | null {
+    const data = InsectDatabase.getById(id);
+    if (!data) return null;
+    return this.spawner.spawnAt(data, pos, 'idle');
   }
 }

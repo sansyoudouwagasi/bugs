@@ -200,11 +200,38 @@ html, body {
   #joystick-zone {
     bottom: max(56px, calc(30px + 24px + env(safe-area-inset-bottom, 0px)));
     left: 16px;
+    width: 130px;
+    height: 130px;
+  }
+  #joystick-base {
+    width: 110px;
+    height: 110px;
+  }
+  #joystick-stick {
+    width: 48px;
+    height: 48px;
   }
   #action-buttons-zone {
     bottom: max(56px, calc(30px + 24px + env(safe-area-inset-bottom, 0px)));
     right: 16px;
-    gap: 12px;
+    width: 138px;
+    height: 132px;
+  }
+  #btn-action {
+    width: 70px;
+    height: 70px;
+  }
+  #btn-jump {
+    width: 50px;
+    height: 50px;
+    right: 12px;
+    top: 0;
+  }
+  #btn-dash {
+    width: 50px;
+    height: 50px;
+    left: 0;
+    bottom: 6px;
   }
 }
 
@@ -261,15 +288,14 @@ html, body {
   pointer-events: none;
 }
 
-/* Right: Action Buttons Group */
+/* Right: Action Buttons Group (Arc / Cluster Layout) */
 #action-buttons-zone {
   position: absolute;
   bottom: max(56px, calc(30px + 24px + env(safe-area-inset-bottom, 0px)));
-  right: 24px;
+  right: 20px;
+  width: 146px;
+  height: 140px;
   pointer-events: auto;
-  display: flex;
-  align-items: flex-end;
-  gap: 16px;
 }
 
 .touch-btn {
@@ -287,6 +313,7 @@ html, body {
   transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.1s ease, filter 0.1s ease;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .touch-btn:active, .touch-btn.active {
@@ -295,14 +322,17 @@ html, body {
   filter: brightness(0.95);
 }
 
-/* Primary Net Action Button */
+/* Primary Net Action Button (Bottom-Right) */
 .btn-primary {
-  width: 78px;
-  height: 78px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 76px;
+  height: 76px;
   background: radial-gradient(circle at 35% 35%, #ff9f43 0%, #ee5253 100%);
   border: 3px solid rgba(255, 255, 255, 0.85);
   color: #fff;
-  margin-bottom: 8px;
+  z-index: 2;
 }
 
 .btn-primary .btn-emoji {
@@ -320,16 +350,26 @@ html, body {
 
 /* Secondary Buttons (Dash, Jump) */
 .btn-secondary {
-  width: 58px;
-  height: 58px;
+  position: absolute;
+  width: 54px;
+  height: 54px;
   background: radial-gradient(circle at 35% 35%, #54a0ff 0%, #2e86de 100%);
   border: 2.5px solid rgba(255, 255, 255, 0.8);
   color: #fff;
-  margin-bottom: 6px;
+  z-index: 1;
 }
 
+/* Dash Button (Left of Action) */
 #btn-dash {
+  left: 0;
+  bottom: 8px;
   background: radial-gradient(circle at 35% 35%, #1dd1a1 0%, #10ac84 100%);
+}
+
+/* Jump Button (Above Action, slightly inset) */
+#btn-jump {
+  top: 0;
+  right: 14px;
 }
 
 .btn-secondary .btn-emoji {
@@ -353,7 +393,6 @@ html, body {
   #action-buttons-zone {
     bottom: max(24px, calc(16px + env(safe-area-inset-bottom, 0px)));
     right: 16px;
-    gap: 10px;
   }
 }
 

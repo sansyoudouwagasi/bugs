@@ -50,6 +50,7 @@ export class TouchController {
 
       const rect = this.joystickBase!.getBoundingClientRect();
       this.joystickCenter.set(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      this.maxRadius = Math.max(30, Math.round(rect.width * 0.34));
       this.updateJoystick(e.clientX, e.clientY);
     };
 

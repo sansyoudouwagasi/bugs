@@ -37,6 +37,8 @@ import { BreedingUI } from '../ui/BreedingUI';
 import { TreehouseManager } from '../treehouse/TreehouseManager';
 import { TreehouseUI } from '../ui/TreehouseUI';
 import { AncientAltarManager } from '../altar/AncientAltarManager';
+import { TitleScreen } from '../ui/TitleScreen';
+import { HowToPlayUI } from '../ui/HowToPlayUI';
 
 export class Game {
   public container: HTMLElement;
@@ -51,6 +53,16 @@ export class Game {
   public cameraController: CameraController;
   public input: InputManager;
   public touchController: TouchController;
+
+  // Title Screen & How to Play Guide
+  public titleScreen: TitleScreen;
+  public howToPlayUI: HowToPlayUI;
+  public isTitleActive: boolean = true;
+  private isCameraTransitioning: boolean = false;
+  private cameraTransitionProgress: number = 0;
+  private titleCameraAngle: number = 0.6;
+  private transitionStartPos: THREE.Vector3 = new THREE.Vector3();
+  private transitionStartLook: THREE.Vector3 = new THREE.Vector3(0, 4, 0);
 
   // Phase 4: Collection & Encyclopedia
   public collection: CollectionManager;
@@ -100,6 +112,7 @@ export class Game {
   private clock: THREE.Clock;
   private isRunning: boolean = false;
   private saveTimer: number = 0;
+
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -302,7 +315,22 @@ export class Game {
       this.audio
     );
 
-    // 21. UI Button Listeners & Keybinds
+    // 21. How to Play UI & Title Screen
+    this.howToPlayUI = new HowToPlayUI(this.audio);
+    this.titleScreen = new TitleScreen(
+      this.audio,
+      this.howToPlayUI,
+      () => this.onStartFromTitle(),
+      () => this.onResetSaveData()
+    );
+
+    // Initially hide in-game HUD until player starts from Title Screen
+    const hudOverlay = document.getElementById('hud-overlay');
+    if (hudOverlay) {
+      hudOverlay.style.display = 'none';
+    }
+
+    // 22. UI Button Listeners & Keybinds
     this.initUIEventListeners();
 
     // Auto save on page unload
@@ -316,6 +344,45 @@ export class Game {
         this.questManager
       );
     });
+  }
+
+  private onStartFromTitle(): void {
+    this.startCameraTransition();
+  }
+
+  private onResetSaveData(): void {
+    SaveManager.clear();
+    window.location.reload();
+  }
+
+  public returnToTitle(): void {
+    SaveManager.save(
+      this.shopManager,
+      this.inventoryManager,
+      this.collection,
+      this.timeManager,
+      this.museumManager,
+      this.questManager
+    );
+    this.isTitleActive = true;
+    this.isCameraTransitioning = false;
+
+    const hudOverlay = document.getElementById('hud-overlay');
+    if (hudOverlay) {
+      hudOverlay.style.display = 'none';
+    }
+
+    this.titleScreen.show();
+  }
+
+  private startCameraTransition(): void {
+    this.isCameraTransitioning = true;
+    this.cameraTransitionProgress = 0;
+    this.transitionStartPos.copy(this.camera.position);
+    this.transitionStartLook.set(0, 4, 0);
+
+    // Close any open modals if any
+    this.howToPlayUI.close();
   }
 
   private travelBoat(dest: 'cave' | 'mainland'): void {
@@ -402,6 +469,33 @@ export class Game {
     const btnOpenBook = document.getElementById('btn-open-book');
     btnOpenBook?.addEventListener('click', () => {
       this.bookUI.toggle();
+    });
+
+    // How to Play Guide button in status bar
+    const btnOpenGuide = document.getElementById('btn-open-guide');
+    btnOpenGuide?.addEventListener('click', () => {
+      this.howToPlayUI.toggle();
+    });
+
+    // Return to Title button in status bar
+    const btnReturnTitle = document.getElementById('btn-return-title');
+    btnReturnTitle?.addEventListener('click', () => {
+      if (confirm('タイトル画面に戻りますか？\n（現在の進行状況は自動セーブされます）')) {
+        this.returnToTitle();
+      }
+    });
+
+    // PC Operation Guide Collapse Toggle & Modal Link
+    const btnToggleGuide = document.getElementById('btn-toggle-guide-collapse');
+    const guideBody = document.getElementById('guide-body');
+    btnToggleGuide?.addEventListener('click', () => {
+      guideBody?.classList.toggle('hidden');
+      btnToggleGuide.classList.toggle('collapsed');
+    });
+
+    const btnGuideModalLink = document.getElementById('btn-guide-modal-link');
+    btnGuideModalLink?.addEventListener('click', () => {
+      this.howToPlayUI.open('basics');
     });
 
     // Shop & Basket button in status bar
@@ -527,8 +621,14 @@ export class Game {
 
     // Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
+      // Don't trigger game shortcuts if title screen is active
+      if (this.isTitleActive && !this.isCameraTransitioning) return;
+
       if (e.code === 'KeyB') {
         this.bookUI.toggle();
+      } else if (e.code === 'F1' || e.code === 'KeyG' || e.key === '?') {
+        this.howToPlayUI.toggle();
+        e.preventDefault();
       } else if (e.code === 'KeyI') {
         this.shopUI.open('sell');
       } else if (e.code === 'KeyP') {
@@ -591,6 +691,7 @@ export class Game {
       }
     });
 
+
     // Window Resize
     window.addEventListener('resize', this.onWindowResize.bind(this));
   }
@@ -608,6 +709,58 @@ export class Game {
 
     const delta = Math.min(this.clock.getDelta(), 0.1);
 
+    // --- TITLE SCREEN MODE ---
+    if (this.isTitleActive) {
+      // 1. Ambience & World updates for dynamic, living title background
+      this.timeManager.update(delta * 0.4);
+      this.weatherManager.update(delta, new THREE.Vector3(0, 0, 0));
+      this.audio.updateAmbience(this.timeManager.getPeriod(), this.weatherManager.currentWeather, delta);
+      this.world.nature.update(delta);
+      this.skyAndLighting.update(delta, new THREE.Vector3(0, 0, 0), this.timeManager, this.weatherManager);
+
+      if (this.isCameraTransitioning) {
+        // Smoothly interpolate camera from panorama orbit view to behind player
+        this.cameraTransitionProgress += delta * 0.85;
+        const t = THREE.MathUtils.clamp(this.cameraTransitionProgress, 0, 1);
+        // Smoothstep easing (ease-in-out)
+        const ease = t * t * (3 - 2 * t);
+
+        // Update player & camera controller to calculate target gameplay camera pose
+        this.cameraController.reset();
+        const targetPos = this.camera.position.clone();
+        const targetLook = this.player.position.clone().add(new THREE.Vector3(0, 1.2, 0));
+
+        const curPos = new THREE.Vector3().lerpVectors(this.transitionStartPos, targetPos, ease);
+        const curLook = new THREE.Vector3().lerpVectors(this.transitionStartLook, targetLook, ease);
+
+        this.camera.position.copy(curPos);
+        this.camera.lookAt(curLook);
+
+        if (t >= 1) {
+          this.isCameraTransitioning = false;
+          this.isTitleActive = false;
+          const hudOverlay = document.getElementById('hud-overlay');
+          if (hudOverlay) {
+            hudOverlay.style.display = 'flex';
+          }
+          this.cameraController.reset();
+        }
+      } else {
+        // Slow cinematic orbit around island
+        this.titleCameraAngle += delta * 0.08;
+        const camDist = 48;
+        const camX = Math.sin(this.titleCameraAngle) * camDist;
+        const camZ = Math.cos(this.titleCameraAngle) * camDist;
+        const camY = 22 + Math.sin(this.titleCameraAngle * 0.5) * 3;
+        this.camera.position.set(camX, camY, camZ);
+        this.camera.lookAt(0, 4, 0);
+      }
+
+      this.renderer.render(this.scene, this.camera);
+      return;
+    }
+
+    // --- NORMAL GAMEPLAY MODE ---
     // 1. Update Game Time & Weather
     this.timeManager.update(delta);
     this.weatherManager.update(delta, this.player.position);

@@ -523,4 +523,26 @@ export class AudioManager {
     noise.start(now);
     noise.stop(now + 0.8);
   }
+
+  public playClick(): void {
+    const ctx = this.ensureContext();
+    if (!ctx || !this.seGain || this.isMuted) return;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(440, now + 0.05);
+
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    osc.connect(gain);
+    gain.connect(this.seGain);
+    osc.start(now);
+    osc.stop(now + 0.06);
+  }
 }
+

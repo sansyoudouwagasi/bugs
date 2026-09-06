@@ -76,9 +76,19 @@
             <span class="badge-icon">📖</span>
             <span class="badge-val">ずかん</span>
           </button>
+          <!-- How to Play / Guide Button -->
+          <button id="btn-open-guide" class="status-badge guide-badge" aria-label="遊び方・操作方法を開く" title="操作・あそびかたガイド">
+            <span class="badge-icon">❓</span>
+            <span class="badge-val">あそびかた</span>
+          </button>
           <!-- Audio Toggle Button -->
           <button id="btn-toggle-audio" class="status-badge audio-badge" aria-label="音声を切り替える" title="BGM/SE 切り替え">
             <span class="badge-icon">🔊</span>
+          </button>
+          <!-- Return to Title Button -->
+          <button id="btn-return-title" class="status-badge title-badge" aria-label="タイトル画面に戻る" title="タイトル画面へ（自動セーブ）">
+            <span class="badge-icon">🏠</span>
+            <span class="badge-val">タイトル</span>
           </button>
         </header>
 
@@ -137,15 +147,26 @@
         </div>
 
         <!-- Operation Guide (PC) -->
-        <div id="operation-guide">
-          <div class="guide-title">🌴 むしとり島 (Phase 10)</div>
-          <div class="guide-item"><span class="key">W A S D</span> : 移動 / <span class="key">C</span> : 忍び足 / <span class="key">Shift</span> : ダッシュ</div>
-          <div class="guide-item"><span class="key">Space</span> : ジャンプ / <span class="key">E</span> : 調べる・木ゆすり・秘密基地・祭壇</div>
-          <div class="guide-item"><span class="key">L</span> : ブリード工房 / <span class="key">H</span> : ミツ塗り / <span class="key">J</span> : 大会 / <span class="key">K</span> : 相撲</div>
-          <div class="guide-item"><span class="key">O</span> : 博物館 / <span class="key">Q</span> : 博士依頼 / <span class="key">Z</span> : フォト</div>
-          <div class="guide-item"><span class="key">I</span> / <span class="key">P</span> : かご・道具屋 / <span class="key">B</span> : 図鑑</div>
-          <div class="guide-item"><span class="key">T</span> : 時間進行 / <span class="key">Y</span> : 天候 / <span class="key">M</span> : 音声</div>
+        <div id="operation-guide" class="operation-guide">
+          <div class="guide-header">
+            <div class="guide-title">
+              <span class="guide-icon">🎮</span>
+              <span>操作ガイド</span>
+            </div>
+            <button id="btn-toggle-guide-collapse" class="guide-collapse-btn" title="表示/非表示">▼</button>
+          </div>
+          <div id="guide-body" class="guide-body">
+            <div class="guide-item"><span class="key">WASD</span> 移動 / <span class="key">Shift</span> 走る / <span class="key">C</span> 忍び足</div>
+            <div class="guide-item"><span class="key">クリック / Space</span> あみ・ジャンプ</div>
+            <div class="guide-item"><span class="key">E</span> 木ゆすり・調べる / <span class="key">H</span> ミツ塗り</div>
+            <div class="guide-item"><span class="key">B</span> 図鑑 / <span class="key">I/P</span> かご・店 / <span class="key">O</span> 博物館</div>
+            <div class="guide-item"><span class="key">K</span> 相撲 / <span class="key">J</span> 大会 / <span class="key">L</span> ブリード / <span class="key">Q</span> 依頼</div>
+            <button id="btn-guide-modal-link" class="guide-modal-link-btn">
+              <span>📖 詳しい遊び方・コツを見る</span>
+            </button>
+          </div>
         </div>
+
 
         <!-- Touch Controls Container (Mobile UI) -->
         <div id="touch-controls">

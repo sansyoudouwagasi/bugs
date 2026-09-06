@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#48b04b" />
-    <title>むしとり島 - Bug Island (Phase 9)</title>
+    <title>むしとり島 - Bug Island (Phase 10: 秘密基地＆ブリード＆伝説召喚)</title>
     <link rel="stylesheet" href="/src/style.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -66,6 +66,11 @@
           <button id="btn-toggle-sneak" class="status-badge sneak-badge" aria-label="しのび足" title="しのび足 (警戒されにくい)">
             <span class="badge-icon">🤫</span>
           </button>
+          <!-- Breeding Lab Button (Phase 10) -->
+          <button id="btn-open-breeding" class="status-badge breeding-badge" aria-label="ブリーディング工房を開く" title="昆虫ブリーディング工房">
+            <span class="badge-icon">🔬</span>
+            <span class="badge-val">ブリード</span>
+          </button>
           <!-- Encyclopedia Book Button -->
           <button id="btn-open-book" class="status-badge book-badge" aria-label="昆虫図鑑を開く">
             <span class="badge-icon">📖</span>
@@ -91,7 +96,7 @@
 
         <!-- Doctor Quest Prompt (Phase 7) -->
         <div id="quest-prompt" class="quest-prompt" style="display: none;">
-          <span class="prompt-icon">🔬</span>
+          <span class="prompt-icon">📜</span>
           <span class="prompt-text">ファーブル博士のおねがい (タップまたは <strong>Q</strong>)</span>
         </div>
 
@@ -119,12 +124,24 @@
           <span class="prompt-text">灯火採集スイッチ切替 (タップまたは <strong>E</strong>)</span>
         </div>
 
+        <!-- Treehouse Base Prompt (Phase 10) -->
+        <div id="treehouse-prompt" class="treehouse-prompt" style="display: none;">
+          <span class="prompt-icon">🌲</span>
+          <span class="prompt-text">マイ秘密基地 (タップまたは <strong>E</strong>)</span>
+        </div>
+
+        <!-- Ancient Altar Prompt (Phase 10) -->
+        <div id="altar-prompt" class="altar-prompt" style="display: none;">
+          <span class="prompt-icon">⚡</span>
+          <span class="prompt-text">古代樹の祭壇 (タップまたは <strong>E</strong>)</span>
+        </div>
+
         <!-- Operation Guide (PC) -->
         <div id="operation-guide">
-          <div class="guide-title">🌴 むしとり島 (Phase 9)</div>
+          <div class="guide-title">🌴 むしとり島 (Phase 10)</div>
           <div class="guide-item"><span class="key">W A S D</span> : 移動 / <span class="key">C</span> : 忍び足 / <span class="key">Shift</span> : ダッシュ</div>
-          <div class="guide-item"><span class="key">Space</span> : ジャンプ / <span class="key">E</span> : 虫とり・木ゆすり・灯火</div>
-          <div class="guide-item"><span class="key">H</span> : ミツ塗り / <span class="key">J</span> : 大会 / <span class="key">K</span> : 相撲</div>
+          <div class="guide-item"><span class="key">Space</span> : ジャンプ / <span class="key">E</span> : 調べる・木ゆすり・秘密基地・祭壇</div>
+          <div class="guide-item"><span class="key">L</span> : ブリード工房 / <span class="key">H</span> : ミツ塗り / <span class="key">J</span> : 大会 / <span class="key">K</span> : 相撲</div>
           <div class="guide-item"><span class="key">O</span> : 博物館 / <span class="key">Q</span> : 博士依頼 / <span class="key">Z</span> : フォト</div>
           <div class="guide-item"><span class="key">I</span> / <span class="key">P</span> : かご・道具屋 / <span class="key">B</span> : 図鑑</div>
           <div class="guide-item"><span class="key">T</span> : 時間進行 / <span class="key">Y</span> : 天候 / <span class="key">M</span> : 音声</div>

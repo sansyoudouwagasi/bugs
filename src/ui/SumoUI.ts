@@ -154,7 +154,8 @@ export class SumoUI {
                     <div class="fighter-details">
                       <div class="fighter-name">
                         ${f.name}
-                        ${f.isGiant ? '<span class="crown-badge gold">👑</span>' : f.isBig ? '<span class="crown-badge silver">🥈</span>' : ''}
+                        ${f.isKing ? '<span class="crown-badge king">👑キング冠</span>' : f.isGiant ? '<span class="crown-badge gold">👑</span>' : f.isBig ? '<span class="crown-badge silver">🥈</span>' : ''}
+                        ${f.isBred ? `<span class="bred-badge">🧬F${f.generation || 1}</span>` : ''}
                       </div>
                       <div class="fighter-rank">番付: <b>${stats.title}</b> (Lv.${stats.level})</div>
                       <div class="fighter-stat-bars">

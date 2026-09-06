@@ -33,6 +33,12 @@ export interface CaughtInsectRecord {
   level?: number;
   power?: number;
   stamina?: number;
+  // Phase 10: Breeding & Variants
+  isKing?: boolean;
+  isBred?: boolean;
+  generation?: number;
+  shinyColor?: string;
+  shinyName?: string;
 }
 
 export interface SumoStats {
@@ -54,7 +60,10 @@ export class InsectDatabase {
     'hercules_beetle',
     'rainbow_stag',
     'platinum_beetle',
-    'giant_water_bug'
+    'giant_water_bug',
+    'caucasus_beetle',
+    'golden_stag',
+    'meganeura'
   ];
 
   public static isSumoFighter(id: string): boolean {
@@ -62,19 +71,24 @@ export class InsectDatabase {
   }
 
   public static getSumoStats(record: CaughtInsectRecord): SumoStats {
+    return this.calculateSumoStats(record);
+  }
+
+  /**
+   * Phase 8: Calculate beetle combat attributes for Insect Sumo Tournament
+   */
+  public static calculateSumoStats(record: CaughtInsectRecord): SumoStats {
+    let basePower = 30;
+    let baseStamina = 30;
+    let baseWeight = 25;
     const level = record.level || 1;
     const bonusPower = record.power || 0;
     const bonusStamina = record.stamina || 0;
 
-    // Base stats by species
-    let basePower = 30;
-    let baseStamina = 30;
-    let baseWeight = 25;
-
     switch (record.id) {
       case 'rhinoceros_beetle':
-        basePower = 45;
-        baseStamina = 40;
+        basePower = 50;
+        baseStamina = 45;
         baseWeight = 40;
         break;
       case 'stag_beetle_sawtooth':
@@ -112,6 +126,22 @@ export class InsectDatabase {
         baseStamina = 65;
         baseWeight = 65;
         break;
+      // Phase 10: New Apex Sumo Fighters
+      case 'caucasus_beetle':
+        basePower = 74;
+        baseStamina = 68;
+        baseWeight = 68;
+        break;
+      case 'golden_stag':
+        basePower = 62;
+        baseStamina = 64;
+        baseWeight = 52;
+        break;
+      case 'meganeura':
+        basePower = 82;
+        baseStamina = 76;
+        baseWeight = 62;
+        break;
       default:
         basePower = 25;
         baseStamina = 25;
@@ -120,18 +150,25 @@ export class InsectDatabase {
 
     // Size multiplier (Bigger beetles have massive sumo advantage)
     let sizeMult = 1.0;
-    if (record.isGiant) {
+    if (record.isKing) {
+      sizeMult = 1.55; // +55% for King Crown (Bred Apex)
+    } else if (record.isGiant) {
       sizeMult = 1.35; // +35% for Giant crown
     } else if (record.isBig) {
       sizeMult = 1.15; // +15% for Big crown
     }
 
-    const power = Math.round((basePower * sizeMult) + (level - 1) * 3 + bonusPower);
-    const stamina = Math.round((baseStamina * sizeMult) + (level - 1) * 3 + bonusStamina);
-    const weight = Math.round(baseWeight * sizeMult);
+    // Bred individual boost
+    const bredBonus = record.isBred ? 8 : 0;
+
+    const power = Math.round((basePower * sizeMult) + (level - 1) * 3 + bonusPower + bredBonus);
+    const stamina = Math.round((baseStamina * sizeMult) + (level - 1) * 3 + bonusStamina + bredBonus);
+    const weight = Math.round(baseWeight * sizeMult + (record.isKing ? 10 : 0));
 
     let title = '前頭';
-    if (power + stamina > 160) {
+    if (power + stamina > 190) {
+      title = '大天翔';
+    } else if (power + stamina > 160) {
       title = '横綱';
     } else if (power + stamina > 130) {
       title = '大関';

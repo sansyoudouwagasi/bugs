@@ -37,6 +37,8 @@ export class InsectModelFactory {
         return this.createPaperKite(data);
       case 'luna_moth':
         return this.createLunaMoth(data);
+      case 'walking_stick':
+        return this.createWalkingStick(data);
       case 'platinum_beetle':
         return this.createPlatinumBeetle(data);
       case 'emperor_cicada':
@@ -49,6 +51,14 @@ export class InsectModelFactory {
         return this.createGiantWaterBug(data);
       case 'luehdorfia':
         return this.createLuehdorfia(data);
+      case 'meganeura':
+        return this.createMeganeura(data);
+      case 'caucasus_beetle':
+        return this.createCaucasusBeetle(data);
+      case 'morpho_butterfly':
+        return this.createMorphoButterfly(data);
+      case 'golden_stag':
+        return this.createGoldenStag(data);
       default:
         return this.createButterfly(data);
     }
@@ -1283,6 +1293,406 @@ export class InsectModelFactory {
 
         leftWingPivot.rotation.z = -flapAngle;
         rightWingPivot.rotation.z = flapAngle;
+      }
+    };
+  }
+
+  // 23. Meganeura Model (Ancient Giant Dragonfly, 70cm Wingspan)
+  private static createMeganeura(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    // Scale up for gigantic ancient dragonfly impression
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0x00d2d3,
+      roughness: 0.35,
+      metalness: 0.6,
+      flatShading: true
+    });
+    const darkMat = new THREE.MeshLambertMaterial({ color: 0x222f3e, flatShading: true });
+    const eyeMat = new THREE.MeshStandardMaterial({
+      color: 0x10ac84,
+      roughness: 0.2,
+      metalness: 0.8,
+      emissive: 0x053326
+    });
+    const wingMat = new THREE.MeshStandardMaterial({
+      color: 0xc8f7f5,
+      transparent: true,
+      opacity: 0.72,
+      roughness: 0.2,
+      metalness: 0.4,
+      side: THREE.DoubleSide
+    });
+
+    // Head with massive compound eyes
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), darkMat);
+    head.position.set(0, 0, 0.45);
+    const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), eyeMat);
+    eyeL.position.set(-0.11, 0.06, 0.05);
+    const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.11, 8, 8), eyeMat);
+    eyeR.position.set(0.11, 0.06, 0.05);
+    head.add(eyeL, eyeR);
+
+    // Thorax (broad muscular flight engine)
+    const thorax = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.45, 8), bodyMat);
+    thorax.rotation.x = Math.PI / 2;
+    thorax.position.set(0, 0, 0.15);
+
+    // Abdomen (long segmented ancient tail)
+    const abdomen = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.04, 1.2, 8), bodyMat);
+    abdomen.rotation.x = Math.PI / 2;
+    abdomen.position.set(0, -0.02, -0.65);
+
+    group.add(head, thorax, abdomen);
+
+    // Spiny predatory legs
+    for (let side of [-1, 1]) {
+      for (let i = 0; i < 3; i++) {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.015, 0.35, 4), darkMat);
+        leg.position.set(side * 0.16, -0.15, 0.25 - i * 0.14);
+        leg.rotation.z = side * (Math.PI / 3);
+        leg.rotation.x = (i - 1) * 0.2;
+        group.add(leg);
+      }
+    }
+
+    // 4 Long Ancient Wings (Two Forewings, Two Hindwings)
+    const foreWingGeo = new THREE.PlaneGeometry(0.85, 0.22);
+    foreWingGeo.translate(0.42, 0, 0);
+
+    const hindWingGeo = new THREE.PlaneGeometry(0.78, 0.24);
+    hindWingGeo.translate(0.39, 0, 0);
+
+    // Left Forewing
+    const leftForePivot = new THREE.Group();
+    leftForePivot.position.set(-0.12, 0.12, 0.26);
+    const leftFore = new THREE.Mesh(foreWingGeo, wingMat);
+    leftFore.rotation.y = Math.PI;
+    leftForePivot.add(leftFore);
+
+    // Right Forewing
+    const rightForePivot = new THREE.Group();
+    rightForePivot.position.set(0.12, 0.12, 0.26);
+    const rightFore = new THREE.Mesh(foreWingGeo, wingMat);
+    rightForePivot.add(rightFore);
+
+    // Left Hindwing
+    const leftHindPivot = new THREE.Group();
+    leftHindPivot.position.set(-0.12, 0.11, 0.08);
+    const leftHind = new THREE.Mesh(hindWingGeo, wingMat);
+    leftHind.rotation.y = Math.PI;
+    leftHindPivot.add(leftHind);
+
+    // Right Hindwing
+    const rightHindPivot = new THREE.Group();
+    rightHindPivot.position.set(0.12, 0.11, 0.08);
+    const rightHind = new THREE.Mesh(hindWingGeo, wingMat);
+    rightHindPivot.add(rightHind);
+
+    group.add(leftForePivot, rightForePivot, leftHindPivot, rightHindPivot);
+
+    let flightTimer = Math.random() * 10;
+
+    return {
+      group,
+      update(delta: number, state: string) {
+        const speed = state === 'flee' ? 45 : 30;
+        flightTimer += delta * speed;
+
+        // Counter-phase flapping for realistic high-speed ancient flight
+        const foreAngle = Math.sin(flightTimer) * 0.45;
+        const hindAngle = Math.sin(flightTimer + 1.2) * 0.45;
+
+        leftForePivot.rotation.z = -foreAngle;
+        rightForePivot.rotation.z = foreAngle;
+        leftHindPivot.rotation.z = -hindAngle;
+        rightHindPivot.rotation.z = hindAngle;
+      }
+    };
+  }
+
+  // 24. Caucasus Beetle Model (Three-Horned Giant Asian Titan)
+  private static createCaucasusBeetle(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    const carapaceMat = new THREE.MeshStandardMaterial({
+      color: 0x1a1c1e,
+      roughness: 0.18,
+      metalness: 0.85,
+      flatShading: true
+    });
+    const jointMat = new THREE.MeshLambertMaterial({ color: 0x0f1112, flatShading: true });
+
+    // Abdomen & Elytra (Massive broad body)
+    const elytra = new THREE.Mesh(new THREE.SphereGeometry(0.38, 10, 8), carapaceMat);
+    elytra.scale.set(1.0, 0.75, 1.25);
+    elytra.position.set(0, 0.18, -0.2);
+
+    // Thorax
+    const thorax = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 0.32, 8), carapaceMat);
+    thorax.rotation.x = Math.PI / 2;
+    thorax.position.set(0, 0.22, 0.18);
+
+    // Head
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), jointMat);
+    head.position.set(0, 0.14, 0.42);
+
+    // 3 Magnificent Horns!
+    // 1. Central Head Horn (Curves upwards from head)
+    const headHorn = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.06, 0.55, 6), carapaceMat);
+    headHorn.position.set(0, 0.32, 0.52);
+    headHorn.rotation.x = -Math.PI / 4;
+
+    // 2 & 3. Left and Right Thoracic Horns (Long sweeping curved pikes)
+    const hornL = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.05, 0.62, 6), carapaceMat);
+    hornL.position.set(-0.16, 0.36, 0.36);
+    hornL.rotation.set(-Math.PI / 5, -0.15, -0.2);
+
+    const hornR = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.05, 0.62, 6), carapaceMat);
+    hornR.position.set(0.16, 0.36, 0.36);
+    hornR.rotation.set(-Math.PI / 5, 0.15, 0.2);
+
+    group.add(elytra, thorax, head, headHorn, hornL, hornR);
+
+    // 6 Powerful Hooked Legs
+    const legs: THREE.Mesh[] = [];
+    for (let side of [-1, 1]) {
+      for (let i = 0; i < 3; i++) {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.015, 0.42, 4), jointMat);
+        leg.position.set(side * 0.28, 0.05, 0.25 - i * 0.25);
+        leg.rotation.z = side * (Math.PI / 3);
+        group.add(leg);
+        legs.push(leg);
+      }
+    }
+
+    let walkTimer = Math.random() * 10;
+
+    return {
+      group,
+      update(delta: number, state: string, isMoving: boolean) {
+        if (isMoving || state === 'flee') {
+          walkTimer += delta * (state === 'flee' ? 18 : 10);
+          legs.forEach((leg, idx) => {
+            const phase = idx % 2 === 0 ? 1 : -1;
+            leg.rotation.x = Math.sin(walkTimer + idx) * 0.3 * phase;
+          });
+        }
+      }
+    };
+  }
+
+  // 25. Morpho Butterfly Model (Miraculous Electric Metallic Blue)
+  private static createMorphoButterfly(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    // Body
+    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x1e272e });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.025, 0.42, 6), bodyMat);
+    body.rotation.x = Math.PI / 2;
+    group.add(body);
+
+    // Magnificent Metallic Blue Wings with black border
+    const wingMatBlue = new THREE.MeshStandardMaterial({
+      color: 0x0984e3,
+      roughness: 0.15,
+      metalness: 0.9,
+      emissive: 0x0652dd,
+      emissiveIntensity: 0.35,
+      side: THREE.DoubleSide
+    });
+    const wingMatBorder = new THREE.MeshLambertMaterial({
+      color: 0x111111,
+      side: THREE.DoubleSide
+    });
+
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.bezierCurveTo(0.15, 0.35, 0.45, 0.55, 0.72, 0.48);
+    shape.bezierCurveTo(0.85, 0.3, 0.88, 0.05, 0.78, -0.22);
+    shape.bezierCurveTo(0.65, -0.42, 0.35, -0.48, 0.12, -0.32);
+    shape.lineTo(0, 0);
+
+    const wingGeo = new THREE.ShapeGeometry(shape);
+
+    const leftPivot = new THREE.Group();
+    leftPivot.position.set(-0.03, 0.04, 0);
+    const leftWing = new THREE.Mesh(wingGeo, wingMatBlue);
+    leftWing.rotation.x = Math.PI / 2;
+    leftWing.rotation.y = Math.PI;
+
+    // Outer edge border
+    const borderL = new THREE.Mesh(wingGeo, wingMatBorder);
+    borderL.scale.set(1.05, 1.05, 1);
+    borderL.position.set(0, -0.002, 0);
+    borderL.rotation.x = Math.PI / 2;
+    borderL.rotation.y = Math.PI;
+    leftPivot.add(borderL, leftWing);
+
+    const rightPivot = new THREE.Group();
+    rightPivot.position.set(0.03, 0.04, 0);
+    const rightWing = new THREE.Mesh(wingGeo, wingMatBlue);
+    rightWing.rotation.x = Math.PI / 2;
+
+    const borderR = new THREE.Mesh(wingGeo, wingMatBorder);
+    borderR.scale.set(1.05, 1.05, 1);
+    borderR.position.set(0, -0.002, 0);
+    borderR.rotation.x = Math.PI / 2;
+    rightPivot.add(borderR, rightWing);
+
+    group.add(leftPivot, rightPivot);
+
+    let flapTimer = Math.random() * Math.PI * 2;
+
+    return {
+      group,
+      update(delta: number, state: string) {
+        const flapSpeed = state === 'flee' ? 20 : 9;
+        flapTimer += delta * flapSpeed;
+        const flapAngle = Math.sin(flapTimer) * 0.85;
+
+        leftPivot.rotation.z = -flapAngle;
+        rightPivot.rotation.z = flapAngle;
+      }
+    };
+  }
+
+  // 26. Golden Stag Beetle Model (Glorious Metallic Gold)
+  private static createGoldenStag(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+
+    // Dazzling high-polish gold material
+    const goldMat = new THREE.MeshStandardMaterial({
+      color: 0xf9ca24,
+      metalness: 0.92,
+      roughness: 0.18,
+      flatShading: true
+    });
+    const jointMat = new THREE.MeshStandardMaterial({
+      color: 0xb77b10,
+      metalness: 0.75,
+      roughness: 0.35,
+      flatShading: true
+    });
+
+    // Body & Elytra
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.32, 8, 8), goldMat);
+    body.scale.set(0.9, 0.65, 1.25);
+    body.position.set(0, 0.15, -0.15);
+
+    // Thorax
+    const thorax = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.28, 0.26, 8), goldMat);
+    thorax.rotation.x = Math.PI / 2;
+    thorax.position.set(0, 0.16, 0.16);
+
+    // Head
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.18, 8), goldMat);
+    head.rotation.x = Math.PI / 2;
+    head.position.set(0, 0.14, 0.34);
+
+    // Characteristic Golden Down-Curved Mandibles
+    const jawGeo = new THREE.CylinderGeometry(0.02, 0.04, 0.38, 6);
+    jawGeo.translate(0, 0.19, 0);
+
+    const leftJaw = new THREE.Mesh(jawGeo, goldMat);
+    leftJaw.position.set(-0.08, 0.12, 0.42);
+    leftJaw.rotation.set(Math.PI / 2 - 0.1, 0.25, -0.3);
+
+    const rightJaw = new THREE.Mesh(jawGeo, goldMat);
+    rightJaw.position.set(0.08, 0.12, 0.42);
+    rightJaw.rotation.set(Math.PI / 2 - 0.1, -0.25, 0.3);
+
+    group.add(body, thorax, head, leftJaw, rightJaw);
+
+    // Golden Legs
+    const legs: THREE.Mesh[] = [];
+    for (let side of [-1, 1]) {
+      for (let i = 0; i < 3; i++) {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.012, 0.35, 4), jointMat);
+        leg.position.set(side * 0.24, 0.04, 0.2 - i * 0.2);
+        leg.rotation.z = side * (Math.PI / 3);
+        group.add(leg);
+        legs.push(leg);
+      }
+    }
+
+    let walkTimer = Math.random() * 10;
+
+    return {
+      group,
+      update(delta: number, state: string, isMoving: boolean) {
+        if (isMoving || state === 'flee') {
+          walkTimer += delta * (state === 'flee' ? 16 : 8);
+          legs.forEach((leg, idx) => {
+            const phase = idx % 2 === 0 ? 1 : -1;
+            leg.rotation.x = Math.sin(walkTimer + idx) * 0.25 * phase;
+          });
+        }
+      }
+    };
+  }
+
+  // 27. Walking Stick Model (Twig Mimicry)
+  private static createWalkingStick(_data: InsectData): AnimatedInsectModel {
+    const group = new THREE.Group();
+    const stickMat = new THREE.MeshStandardMaterial({
+      color: 0x795548,
+      roughness: 0.85,
+      metalness: 0.1,
+      flatShading: true
+    });
+    const jointMat = new THREE.MeshLambertMaterial({ color: 0x4e342e });
+
+    // Long slender twig-like body
+    const bodyGeo = new THREE.CylinderGeometry(0.02, 0.015, 0.85, 5);
+    const body = new THREE.Mesh(bodyGeo, stickMat);
+    body.rotation.x = Math.PI / 2;
+    group.add(body);
+
+    // Head and long antennae
+    const headGeo = new THREE.SphereGeometry(0.028, 5, 5);
+    const head = new THREE.Mesh(headGeo, jointMat);
+    head.position.set(0, 0, 0.44);
+    group.add(head);
+
+    const antGeo = new THREE.CylinderGeometry(0.003, 0.002, 0.35, 3);
+    const antL = new THREE.Mesh(antGeo, stickMat);
+    antL.position.set(-0.02, 0.02, 0.6);
+    antL.rotation.x = Math.PI / 2 + 0.1;
+    antL.rotation.z = 0.15;
+    const antR = new THREE.Mesh(antGeo, stickMat);
+    antR.position.set(0.02, 0.02, 0.6);
+    antR.rotation.x = Math.PI / 2 + 0.1;
+    antR.rotation.z = -0.15;
+    group.add(antL, antR);
+
+    // 6 long slender legs
+    const legs: THREE.Mesh[] = [];
+    const legGeo = new THREE.CylinderGeometry(0.005, 0.003, 0.45, 3);
+    for (let i = 0; i < 3; i++) {
+      for (const side of [-1, 1]) {
+        const leg = new THREE.Mesh(legGeo, stickMat);
+        leg.position.set(side * 0.14, -0.02, 0.3 - i * 0.28);
+        leg.rotation.z = side * (Math.PI / 3.5);
+        group.add(leg);
+        legs.push(leg);
+      }
+    }
+
+    let swayTimer = Math.random() * 10;
+
+    return {
+      group,
+      update(delta: number, state: string, isMoving: boolean) {
+        if (isMoving || state === 'flee') {
+          swayTimer += delta * (state === 'flee' ? 12 : 5);
+          legs.forEach((leg, idx) => {
+            const phase = idx % 2 === 0 ? 1 : -1;
+            leg.rotation.x = Math.sin(swayTimer + idx) * 0.22 * phase;
+          });
+          // Gentle sway like a twig in the breeze
+          group.rotation.z = Math.sin(swayTimer * 0.8) * 0.05;
+        }
       }
     };
   }

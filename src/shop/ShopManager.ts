@@ -27,6 +27,8 @@ export class ShopManager {
   public medicineCount: number = 0;
   public redJellyCount: number = 0;
   public greenJellyCount: number = 0;
+  public fungusBottleCount: number = 0;
+  public proteinJellyCount: number = 0;
 
   public onUpgradeChange?: () => void;
 
@@ -78,6 +80,22 @@ export class ShopManager {
       icon: '🍌',
       price: 120,
       description: '熟成バナナを発酵させた高級蜜。ヘラクレスやオオクワガタ、ギフチョウなどの最上級レア虫を引き寄せる！',
+    },
+    {
+      id: 'fungus_bottle',
+      name: 'ブリード菌糸ビン',
+      category: 'consumable',
+      icon: '🧪',
+      price: 180,
+      description: '幼虫が喜ぶ栄養満点の特製菌糸ボトル。ブリード時の超大型化（キング冠👑）確率が超アップ！',
+    },
+    {
+      id: 'protein_jelly',
+      name: '特製プロテインゼリー',
+      category: 'consumable',
+      icon: '🍮',
+      price: 250,
+      description: '羽化までの成長を劇的に加速させる超高濃度ゼリー。成長ゲージを一気に+45%短縮！',
     },
     {
       id: 'medicine',
@@ -164,6 +182,10 @@ export class ShopManager {
       this.redJellyCount += 1;
     } else if (itemId === 'jelly_green') {
       this.greenJellyCount += 1;
+    } else if (itemId === 'fungus_bottle') {
+      this.fungusBottleCount += 1;
+    } else if (itemId === 'protein_jelly') {
+      this.proteinJellyCount += 1;
     }
 
     if (this.audio) {
@@ -176,6 +198,35 @@ export class ShopManager {
     }
 
     return { success: true, message: `${item.name} を購入しました！` };
+  }
+
+  public getItemCount(itemId: string): number {
+    switch (itemId) {
+      case 'honey': return this.honeyCount;
+      case 'banana_honey': return this.bananaHoneyCount;
+      case 'fungus_bottle': return this.fungusBottleCount;
+      case 'protein_jelly': return this.proteinJellyCount;
+      case 'medicine': return this.medicineCount;
+      case 'jelly_red': return this.redJellyCount;
+      case 'jelly_green': return this.greenJellyCount;
+      default: return 0;
+    }
+  }
+
+  public consumeItem(itemId: string, count: number = 1): boolean {
+    if (this.getItemCount(itemId) < count) return false;
+    switch (itemId) {
+      case 'honey': this.honeyCount = Math.max(0, this.honeyCount - count); break;
+      case 'banana_honey': this.bananaHoneyCount = Math.max(0, this.bananaHoneyCount - count); break;
+      case 'fungus_bottle': this.fungusBottleCount = Math.max(0, this.fungusBottleCount - count); break;
+      case 'protein_jelly': this.proteinJellyCount = Math.max(0, this.proteinJellyCount - count); break;
+      case 'medicine': this.medicineCount = Math.max(0, this.medicineCount - count); break;
+      case 'jelly_red': this.redJellyCount = Math.max(0, this.redJellyCount - count); break;
+      case 'jelly_green': this.greenJellyCount = Math.max(0, this.greenJellyCount - count); break;
+      default: return false;
+    }
+    this.saveToStorage();
+    return true;
   }
 
   public feedJelly(
@@ -316,6 +367,8 @@ export class ShopManager {
       localStorage.setItem('bug_island_medicine', this.medicineCount.toString());
       localStorage.setItem('bug_island_jelly_red', this.redJellyCount.toString());
       localStorage.setItem('bug_island_jelly_green', this.greenJellyCount.toString());
+      localStorage.setItem('bug_island_fungus_bottle', this.fungusBottleCount.toString());
+      localStorage.setItem('bug_island_protein_jelly', this.proteinJellyCount.toString());
     } catch {
       // Ignore
     }
@@ -336,6 +389,8 @@ export class ShopManager {
       this.medicineCount = parseInt(localStorage.getItem('bug_island_medicine') || '0', 10) || 0;
       this.redJellyCount = parseInt(localStorage.getItem('bug_island_jelly_red') || '0', 10) || 0;
       this.greenJellyCount = parseInt(localStorage.getItem('bug_island_jelly_green') || '0', 10) || 0;
+      this.fungusBottleCount = parseInt(localStorage.getItem('bug_island_fungus_bottle') || '0', 10) || 0;
+      this.proteinJellyCount = parseInt(localStorage.getItem('bug_island_protein_jelly') || '0', 10) || 0;
     } catch {
       this.money = 0;
     }

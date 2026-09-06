@@ -32,6 +32,11 @@ import { CampSite } from '../camp/CampSite';
 import { HoneyTrapManager } from '../trap/HoneyTrapManager';
 import { TournamentManager } from '../tournament/TournamentManager';
 import { TournamentUI } from '../ui/TournamentUI';
+import { BreedingManager } from '../breeding/BreedingManager';
+import { BreedingUI } from '../ui/BreedingUI';
+import { TreehouseManager } from '../treehouse/TreehouseManager';
+import { TreehouseUI } from '../ui/TreehouseUI';
+import { AncientAltarManager } from '../altar/AncientAltarManager';
 
 export class Game {
   public container: HTMLElement;
@@ -81,6 +86,13 @@ export class Game {
   public honeyTrapManager: HoneyTrapManager;
   public tournamentManager: TournamentManager;
   public tournamentUI: TournamentUI;
+
+  // Phase 10: Breeding, Treehouse Base & Ancient Altar
+  public breedingManager: BreedingManager;
+  public breedingUI: BreedingUI;
+  public treehouseManager: TreehouseManager;
+  public treehouseUI: TreehouseUI;
+  public ancientAltarManager: AncientAltarManager;
 
   public insectManager: InsectManager;
   private catchUI: CatchEffectUI;
@@ -267,7 +279,30 @@ export class Game {
       this.tournamentManager.onInsectCaught(record);
     });
 
-    // 20. UI Button Listeners & Keybinds
+    // 20. Phase 10: Breeding, Treehouse Base & Ancient Altar
+    this.breedingManager = new BreedingManager(this.inventoryManager, this.shopManager);
+    this.breedingUI = new BreedingUI(this.breedingManager, this.inventoryManager, this.shopManager, this.audio);
+
+    this.treehouseManager = new TreehouseManager(this.world.island, this.timeManager, this.healthManager, this.audio);
+    this.scene.add(this.treehouseManager.group);
+
+    this.ancientAltarManager = new AncientAltarManager(
+      this.world.island,
+      this.weatherManager,
+      this.insectManager,
+      this.shopManager,
+      this.audio
+    );
+    this.scene.add(this.ancientAltarManager.group);
+
+    this.treehouseUI = new TreehouseUI(
+      this.treehouseManager,
+      this.ancientAltarManager,
+      this.breedingManager,
+      this.audio
+    );
+
+    // 21. UI Button Listeners & Keybinds
     this.initUIEventListeners();
 
     // Auto save on page unload
@@ -454,7 +489,17 @@ export class Game {
       this.tournamentUI.toggleLobby();
     });
 
-    // Phase 9: Prompts Click Handlers
+    // Phase 10: Breeding button
+    const btnOpenBreeding = document.getElementById('btn-open-breeding');
+    btnOpenBreeding?.addEventListener('click', () => {
+      if (this.breedingUI.isOpen()) {
+        this.breedingUI.close();
+      } else {
+        this.breedingUI.open();
+      }
+    });
+
+    // Phase 9 & 10: Prompts Click Handlers
     document.getElementById('campfire-prompt')?.addEventListener('click', () => {
       this.campSite.restAtCampfire();
     });
@@ -463,6 +508,21 @@ export class Game {
     });
     document.getElementById('honey-apply-prompt')?.addEventListener('click', () => {
       this.honeyTrapManager.applyHoneyToCurrentTree();
+    });
+    document.getElementById('treehouse-prompt')?.addEventListener('click', () => {
+      const prompt = this.treehouseManager.update(this.player.position);
+      if (prompt && prompt.type === 'bed') {
+        this.treehouseUI.openBed();
+      } else if (prompt && prompt.type === 'breeding') {
+        this.breedingUI.open();
+      } else if (prompt && prompt.type === 'radio') {
+        this.treehouseUI.openRadio();
+      } else {
+        this.breedingUI.open();
+      }
+    });
+    document.getElementById('altar-prompt')?.addEventListener('click', () => {
+      this.treehouseUI.openAltar();
     });
 
     // Keyboard Shortcuts
@@ -496,8 +556,27 @@ export class Game {
           e.preventDefault();
         }
       } else if (e.code === 'KeyE') {
-        if (this.campSite.isNearLightTrap(this.player.position)) {
+        const treehousePrompt = this.treehouseManager.update(this.player.position);
+        if (treehousePrompt && treehousePrompt.type) {
+          if (treehousePrompt.type === 'bed') {
+            this.treehouseUI.openBed();
+          } else if (treehousePrompt.type === 'breeding') {
+            this.breedingUI.open();
+          } else if (treehousePrompt.type === 'radio') {
+            this.treehouseUI.openRadio();
+          } else if (treehousePrompt.type === 'trophy') {
+            alert('🏆 これまで獲得した大会トロフィーや自慢のキング冠昆虫が飾られた標本棚です！');
+          }
+        } else if (this.ancientAltarManager.update(0, this.player.position)) {
+          this.treehouseUI.openAltar();
+        } else if (this.campSite.isNearLightTrap(this.player.position)) {
           this.campSite.toggleTrap();
+        }
+      } else if (e.code === 'KeyL') {
+        if (this.breedingUI.isOpen()) {
+          this.breedingUI.close();
+        } else {
+          this.breedingUI.open();
         }
       } else if (e.code === 'KeyC') {
         const isSneak = this.playerController.toggleSneak();
@@ -615,6 +694,31 @@ export class Game {
     if (honeyPrompt) {
       const hasAnyHoney = this.shopManager.honeyCount > 0 || (this.shopManager as any).bananaHoneyCount > 0;
       honeyPrompt.style.display = nearHoneyTree && hasAnyHoney && !nearHoneyTree.hasHoney ? 'flex' : 'none';
+    }
+
+    // 17. Phase 10: Update Breeding, Treehouse & Ancient Altar
+    this.breedingManager.update(delta);
+
+    const treehousePrompt = this.treehouseManager.update(this.player.position);
+    const treehousePromptEl = document.getElementById('treehouse-prompt');
+    if (treehousePromptEl) {
+      if (treehousePrompt) {
+        treehousePromptEl.style.display = 'flex';
+        treehousePromptEl.textContent = treehousePrompt.message;
+      } else {
+        treehousePromptEl.style.display = 'none';
+      }
+    }
+
+    const altarPrompt = this.ancientAltarManager.update(delta, this.player.position);
+    const altarPromptEl = document.getElementById('altar-prompt');
+    if (altarPromptEl) {
+      if (altarPrompt) {
+        altarPromptEl.style.display = 'flex';
+        altarPromptEl.textContent = altarPrompt.message;
+      } else {
+        altarPromptEl.style.display = 'none';
+      }
     }
 
     // 15. Auto Save every 30s

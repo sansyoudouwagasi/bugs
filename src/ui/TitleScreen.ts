@@ -69,7 +69,6 @@ export class TitleScreen {
         <div class="title-top-badge">
           <span class="badge-star">⭐</span>
           <span class="badge-text">南の楽園オープンワールド昆虫採集アドベンチャー</span>
-          <span class="badge-tag">Phase 10 完全版</span>
         </div>
 
         <!-- Main Center Hero Area -->
